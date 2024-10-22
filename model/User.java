@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 @Data
 public class User {
-    String name;
-    Long id;
-    String email;
-    String login;
-    LocalDate birthday;
+    private String name;
+    private Long id;
+    private String email;
+    private String login;
+    private LocalDate birthday;
 
 }

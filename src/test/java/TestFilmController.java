@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Collections;
 
 public class TestFilmController {
     FilmController filmController;
@@ -24,10 +25,9 @@ public class TestFilmController {
     }
     @Test
     void validDescription() {
+        String str = String.join(" ", Collections.nCopies(200, " "));
         film.setName("Троя");
-        film.setDescription("Классный фильм.Классный фильм.Классный фильм.Классный фильм.Классный фильм." +
-                "Классный фильм.Классный фильм.Классный фильм.Классный фильм.Классный фильм.Классный фильм." +
-                "Классный фильм.Классный фильм.Классный фильм.Классный фильм.Классный фильм.Классный фильм.");
+        film.setDescription(str);
         film.setDuration(Duration.ofHours(3));
         film.setReleaseDate(LocalDate.of(2004,4,7));
         Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));

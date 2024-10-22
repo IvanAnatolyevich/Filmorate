@@ -1,4 +1,5 @@
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -9,13 +10,8 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/users")
+@Slf4j
 public class UserController {
-    /* ПРИ ДОБАВЛЕНИИ:
-        - электронная почта не может быть пустой и должна содержать символ @;
-        - логин не может быть пустым и содержать пробелы;
-        - имя для отображения может быть пустым — в таком случае будет использован логин;
-        - дата рождения не может быть в будущем. */
-    private final static Logger log = LoggerFactory.getLogger(UserController.class);
 
     private HashMap<Long, User> users = new HashMap<>();
 
@@ -53,8 +49,10 @@ public class UserController {
         }
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
-            // если публикация найдена и все условия соблюдены, обновляем её содержимое
             oldUser.setEmail(newUser.getEmail());
+            oldUser.setLogin(newUser.getLogin());
+            oldUser.setName(newUser.getName());
+            oldUser.setBirthday(newUser.getBirthday());
             log.info("Пользователь обновился");
             return newUser;
         }
