@@ -1,7 +1,6 @@
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import lombok.NonNull;
+package ru.yandex.model;
 
+import lombok.Data;
 import java.time.Duration;
 import java.time.LocalDate;
 
@@ -12,5 +11,5 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private Duration duration;
-
+    private Long like;
 }

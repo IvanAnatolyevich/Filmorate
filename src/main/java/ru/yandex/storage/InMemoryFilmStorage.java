@@ -1,22 +1,24 @@
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+package ru.yandex.storage;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import ru.yandex.exception.FilmNotFoundException;
+import ru.yandex.exception.ValidationException;
+import ru.yandex.model.Film;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
-@RestController
-@RequestMapping("/films")
 @Slf4j
-public class FilmController {
+@Component
+@Data
+public class InMemoryFilmStorage implements FilmStorage {
+    private Map<Long, Film> films = new HashMap<>();
 
-    private HashMap<Long, Film> films = new HashMap<>();
-
-    @PostMapping
-    public Film createFilm(@RequestBody Film film) {
+    @Override
+    public Film createFilm(Film film) {
         log.info("Получен запрос на добавление фильма {}", film);
         validate(film);
         film.setId(getNextId());
@@ -26,8 +28,8 @@ public class FilmController {
 
     }
 
-    @PutMapping
-    public Film updateFilm(@RequestBody Film newFilm) {
+    @Override
+    public Film updateFilm(Film newFilm) {
         log.info("Получен запрос на обновление фильма {}", newFilm);
         validate(newFilm);
         if (newFilm.getId() == null) {
@@ -44,14 +46,23 @@ public class FilmController {
             return newFilm;
         }
         log.error("Ошибка валидации");
-        throw new ValidationException("Пост с id = " + newFilm.getId() + " не найден");
+        throw new FilmNotFoundException("Пост с id = " + newFilm.getId() + " не найден");
     }
 
 
-    @GetMapping
+    @Override
     public Collection<Film> allFilms() {
         log.info("Получен запрос на получение фильмом");
         return films.values();
+    }
+
+    @Override
+    public Film deleteFilm(Film film) {
+        if (films.containsKey(film.getId())) {
+            return films.remove(film.getId());
+        }
+        log.error("Ошибка валидации");
+        throw new FilmNotFoundException("Пост с id = " + film.getId() + " не найден");
     }
 
     private long getNextId() {
@@ -83,5 +94,4 @@ public class FilmController {
             throw new ValidationException("Продолжительность фильма доджна быть положительным числом");
         }
     }
-
 }

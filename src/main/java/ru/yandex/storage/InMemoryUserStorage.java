@@ -1,22 +1,27 @@
-import jakarta.validation.Valid;
+package ru.yandex.storage;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
+import ru.yandex.exception.UserNotFoundException;
+import ru.yandex.exception.ValidationException;
+import ru.yandex.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
-@RestController
-@RequestMapping("/users")
 @Slf4j
-public class UserController {
+@Component
+@Data
+public class InMemoryUserStorage implements UserStorage {
+    private Map<Long, User> users = new HashMap<>();
 
-    private HashMap<Long, User> users = new HashMap<>();
-
-    @PostMapping
-    public User createUser(@RequestBody User user) {
+    @Override
+    public User createUser(User user) {
         log.info("Получен запрос на создание пользователя {}", user);
         if (user.getEmail().isBlank() || !(user.getEmail().contains("@"))) {
             log.error("Ошибка валидации email");
@@ -40,8 +45,17 @@ public class UserController {
         return user;
     }
 
-    @PutMapping
-    public User updateUser(@RequestBody User newUser) {
+    @Override
+    public User deleteUser(User user) {
+        if (users.containsKey(user.getId())) {
+            return users.remove(user.getId());
+        }
+        log.error("Ошибка валидации");
+        throw new UserNotFoundException("Пост с id = " + user.getId() + " не найден");
+    }
+
+    @Override
+    public User updateUser(User newUser) {
         log.info("Получен запрос на обновление пользователя {}", newUser);
         if (newUser.getId() == null) {
             log.error("Ошибка валидации");
@@ -57,10 +71,10 @@ public class UserController {
             return newUser;
         }
         log.error("Ошибка валидации");
-        throw new ValidationException("Пост с id = " + newUser.getId() + " не найден");
+        throw new UserNotFoundException("Пост с id = " + newUser.getId() + " не найден");
     }
 
-    @GetMapping
+    @Override
     public Collection<User> allUsers() {
         log.info("Получен запрос на получение пользователей");
         return users.values();
