@@ -11,6 +11,6 @@ public interface FilmService {
     Collection<Film> allFilms();
     Film addLike(Long id, Long userId);
     Film deleteLike(Long id, Long userId);
-    Set<Film> topFilm(Integer count);
+    Collection<Film> topFilms(Integer count);
     Film getFilmId(Long id);
 }

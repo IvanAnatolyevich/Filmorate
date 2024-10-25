@@ -3,14 +3,14 @@ package ru.yandex.service;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.exception.FilmNotFoundException;
-import ru.yandex.exception.UserNotFoundException;
+import ru.yandex.exception.NotFoundException;
 import ru.yandex.model.Film;
 import ru.yandex.model.User;
 import ru.yandex.storage.InMemoryFilmStorage;
 import ru.yandex.storage.InMemoryUserStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,72 +39,35 @@ public class FilmServiceImpl implements FilmService {
     public Film addLike(Long id, Long userId) {
         if (filmStorage.getFilms().containsKey(id)) {
             if (userStorage.getUsers().containsKey(userId)) {
-                User user = userStorage.getUsers().get(userId);
-                Set<Long> set = userStorage.getUsers().get(userId).getLikes();
-                set.add(id);
-                user.setLikes(set);
-                Map<Long, User> map = userStorage.getUsers();
-                map.put(userId, user);
-                userStorage.setUsers(map);
+                filmStorage.getFilms().get(id).getUserLikes().add(userId);
                 return filmStorage.getFilms().get(id);
-                // ИСПРАВИТЬ ЗАМЕНУ МНОЖЕСТВА В КЛАССЕ USERCONTROLLER
             }
-            throw new UserNotFoundException("Пост с id = " + userId + " не найден");
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
-        throw new FilmNotFoundException("Пост с id = " + id + " не найден");
+        throw new NotFoundException("Фильм с id = " + id + " не найден");
     }
 
     public Film deleteLike(Long id, Long userId) {
         if (filmStorage.getFilms().containsKey(id)) {
             if (userStorage.getUsers().containsKey(userId)) {
-                if (userStorage.getUsers().get(userId).getLikes().contains(id)) {
-                    User user = userStorage.getUsers().get(userId);
-                    Set<Long> set = userStorage.getUsers().get(userId).getLikes();
-                    set.remove(id);
-                    user.setLikes(set);
-                    Map<Long, User> map = userStorage.getUsers();
-                    map.put(userId, user);
-                    userStorage.setUsers(map);
+                if (filmStorage.getFilms().get(id).getUserLikes().contains(userId)) {
+                    filmStorage.getFilms().get(id).getUserLikes().remove(userId);
                     return filmStorage.getFilms().get(id);
                 }
-                throw new FilmNotFoundException("Пост с id = " + id + " не найден");
+                throw new NotFoundException("Фильм с id = " + id + " не найден");
             }
-            throw new UserNotFoundException("Пост с id = " + userId + " не найден");
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
-        throw new FilmNotFoundException("Пост с id = " + id + " не найден");
+        throw new NotFoundException("Фильм с id = " + id + " не найден");
     }
 
-    public Set<Film> topFilm(Integer count) {
-        Comparator<Film> filmComparator = new Comparator<>() {
-            @Override
-            public int compare(Film film1, Film film2) {
-                return film1.getLike().compareTo(film2.getLike());
-            }
-        };
-
-        Set<Film> top = new TreeSet(filmComparator);
-        top.addAll(filmStorage.getFilms().values());
-        if (count == null) {
-            Film[] topFilms = new Film[10];
-            for (Film  film: top) {
-                int i = 0;
-                if (i == 10) {
-                    return new HashSet<>(List.of(topFilms));
-                }
-                topFilms[i] = film;
-            }
-            return new HashSet<>(List.of(topFilms));
-        }
-        Film[] topFilms = new Film[count];
-        for (Film  film: top) {
-            int i = 0;
-            if (i >= count) {
-                break;
-            }
-            topFilms[i] = film;
-        }
-        return new HashSet<>(List.of(topFilms));
+    public Collection<Film> topFilms(Integer count) {
+        return filmStorage.getFilms().values().stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
+
 
     public Film getFilmId(Long id) {
         return filmStorage.getFilms().get(id);

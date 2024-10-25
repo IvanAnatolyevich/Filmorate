@@ -1,5 +1,6 @@
 package ru.yandex.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.Set;
@@ -12,6 +13,4 @@ public class User {
     private String login;
     private LocalDate birthday;
     private Set<Long> friends;
-    private Set<Long> likes;
-
 }

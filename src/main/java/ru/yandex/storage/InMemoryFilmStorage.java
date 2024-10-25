@@ -3,13 +3,14 @@ package ru.yandex.storage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.exception.FilmNotFoundException;
+import ru.yandex.exception.NotFoundException;
 import ru.yandex.exception.ValidationException;
 import ru.yandex.model.Film;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -46,7 +47,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             return newFilm;
         }
         log.error("Ошибка валидации");
-        throw new FilmNotFoundException("Пост с id = " + newFilm.getId() + " не найден");
+        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
 
@@ -62,9 +63,8 @@ public class InMemoryFilmStorage implements FilmStorage {
             return films.remove(film.getId());
         }
         log.error("Ошибка валидации");
-        throw new FilmNotFoundException("Пост с id = " + film.getId() + " не найден");
+        throw new NotFoundException("Фильм с id = " + film.getId() + " не найден");
     }
-
     private long getNextId() {
         long currentMaxId = films.keySet()
                 .stream()

@@ -1,11 +1,9 @@
 package ru.yandex.storage;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.exception.UserNotFoundException;
+import ru.yandex.exception.NotFoundException;
 import ru.yandex.exception.ValidationException;
 import ru.yandex.model.User;
 
@@ -51,7 +49,7 @@ public class InMemoryUserStorage implements UserStorage {
             return users.remove(user.getId());
         }
         log.error("Ошибка валидации");
-        throw new UserNotFoundException("Пост с id = " + user.getId() + " не найден");
+        throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден");
     }
 
     @Override
@@ -71,7 +69,7 @@ public class InMemoryUserStorage implements UserStorage {
             return newUser;
         }
         log.error("Ошибка валидации");
-        throw new UserNotFoundException("Пост с id = " + newUser.getId() + " не найден");
+        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
     }
 
     @Override
