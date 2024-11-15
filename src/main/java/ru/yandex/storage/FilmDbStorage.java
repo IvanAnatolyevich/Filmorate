@@ -6,11 +6,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.model.Film;
+import ru.yandex.storage.mapper.FilmLikeMapper;
 import ru.yandex.storage.mapper.FilmMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -18,6 +23,7 @@ import java.util.Collection;
 public class FilmDbStorage implements FilmStorage{
     private final JdbcTemplate jdbcTemplate;
     private final FilmMapper filmMapper;
+    private final FilmLikeMapper filmikeMapper;
 
     @Override
     public Film createFilm(Film film) {
@@ -37,11 +43,10 @@ public class FilmDbStorage implements FilmStorage{
         Long generatedId = keyHolder.getKeyAs(Long.class);
         film.setId(generatedId);
 
-        String sqlQuery = "insert into genreFilm(id_film, id_genre) " +
-                "values (?, ?);";
-        jdbcTemplate.update(sqlQuery, film.getId(), film.getGenre());  // ИЗМЕНИТЬ ПОЛЯ genre НА СПИСОК!!!! И ,СЛЕДОВАТЕЛЬНО, ИЗМЕНИТЬ ЗАПОЛНЕНИЕ ТАБЛИЦЫ И ОБНОВЛЕНИЕ ТАБЛИЦЫ!!!!
-
-        sqlQuery = "insert into userLikes(id_film, id_user) " +
+//        String sqlQuery = "insert into genreFilm(id_film, id_genre) " +
+//                "values (?, ?);";
+//        jdbcTemplate.update(sqlQuery, film.getId(), film.getGenre());
+        String sqlQuery = "insert into userLikes(id_film, id_user) " +
                 "values (?, ?);";
         for(Long el: film.getUserLikes()) {
             jdbcTemplate.update(sqlQuery, film.getId(), el);
@@ -52,7 +57,27 @@ public class FilmDbStorage implements FilmStorage{
 
     @Override
     public Collection<Film> allFilms() {
-        return jdbcTemplate.query("SELECT * FROM films;", filmMapper);
+        Collection<Film> all = new HashSet<>();
+        for (Film film : jdbcTemplate.query("SELECT * FROM userLikes;", filmikeMapper)) {
+            for (Film film1 : jdbcTemplate.query("SELECT * FROM films;", filmMapper)) {
+                if (film.getId() == film1.getId()) {
+                    Film film2 = Film.builder()
+                            .id(film1.getId())
+                            .genre(film1.getGenre())
+                            .description(film1.getDescription())
+                            .like(film1.getLike())
+                            .name(film1.getName())
+                            .duration(film1.getDuration())
+                            .releaseDate(film1.getReleaseDate())
+                            .userLikes(film.getUserLikes())
+                            .rating(film1.getRating())
+                            .build();
+                    all.add(film2);
+                }
+                all.add(film1);
+            }
+        }
+        return all;
     }
 
     @Override
@@ -69,9 +94,9 @@ public class FilmDbStorage implements FilmStorage{
         for(Long el: newFilm.getUserLikes()) {
             jdbcTemplate.update(sqlQuery, newFilm.getId(), el);
         }
-        jdbcTemplate.update("update genreFilm set" +
-                "id_film = ?, id_genre = ? " +
-                "where id = ?;", newFilm.getId(), newFilm.getGenre());
+//        jdbcTemplate.update("update genreFilm set" +
+//                "id_film = ?, id_genre = ? " +
+//                "where id = ?;", newFilm.getId(), newFilm.getGenre());
 
         return newFilm;
     }
@@ -80,7 +105,7 @@ public class FilmDbStorage implements FilmStorage{
     public Film deleteFilm(Film film) {
         String sqlQuery = "delete from ? where id = ?;";
         jdbcTemplate.update(sqlQuery, "films", film.getId());
-        jdbcTemplate.update(sqlQuery, "genreFilm", film.getId());
+//        jdbcTemplate.update(sqlQuery, "genreFilm", film.getId());
         jdbcTemplate.update(sqlQuery, "userLikes", film.getId());
         return film;
     }

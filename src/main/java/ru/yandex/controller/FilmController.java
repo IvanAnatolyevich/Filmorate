@@ -24,6 +24,26 @@ public class FilmController {
         return filmServiceImpl.allFilms();
     }
 
+    @GetMapping("/genre")
+    public Collection<String> allGenre() {
+        return filmServiceImpl.allGenre();
+    }
+
+    @GetMapping("/genre/{id}")
+    public String getGenreId(@PathVariable long id) {
+        return filmServiceImpl.getGenreId(id);
+    }
+
+    @GetMapping("/mpa")
+    public Collection<String> allRating() {
+        return filmServiceImpl.allRating();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public String getRatingId(@PathVariable long id) {
+        return filmServiceImpl.getRatingId(id);
+    }
+
     @PutMapping
     public Film updateFilm(@RequestBody Film newFilm) {
         return filmServiceImpl.updateFilm(newFilm);
