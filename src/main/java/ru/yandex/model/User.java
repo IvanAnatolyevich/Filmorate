@@ -1,11 +1,12 @@
 package ru.yandex.model;
 
-import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Data
+@Builder
 public class User {
     private String name;
     private Long id;
@@ -13,4 +14,5 @@ public class User {
     private String login;
     private LocalDate birthday;
     private Set<Long> friends;
+    private int status;
 }

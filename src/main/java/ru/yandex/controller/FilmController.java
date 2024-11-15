@@ -45,8 +45,8 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public Collection<Film> topFilm(@RequestParam Integer count) {
-        return filmServiceImpl.topFilm(count);
+    public Collection<Film> topFilms(@RequestParam Integer count) {
+        return filmServiceImpl.topFilms(count);
     }
 
     @GetMapping("/films/{id}")
